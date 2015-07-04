@@ -4,10 +4,14 @@ define(function (require, exports, module) {
   const { Collection, Events } = require('backbone')
   const { find, extend } = require('underscore')
 
+  const ISO8601 = /PT(\d+H)?(\d+M)?(\d+S)?/
   const parseDuration = iso => {
     let duration = 0
-    let [ minutes, seconds ] = (/PT(?:(\d+)M)?(\d+)S/.exec(iso) || []).slice(1).map(n => parseInt(n, 10) || 0)
-    return minutes * 60 + seconds
+    let [ hours, minutes, seconds ] = (ISO8601.exec(iso) || [])
+      // get rid of full match
+      .slice(1)
+      .map(n => parseInt(n, 10) || 0)
+    return hours * 3600 + minutes * 60 + seconds
   }
 
   class PlaylistImporter {
