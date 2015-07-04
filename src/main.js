@@ -7,13 +7,24 @@ define(function (require, exports, module) {
   const YTImportService = require('plug/actions/youtube/YouTubeImportService')
   const { around } = require('meld')
 
+  const PLAYLIST_URL = 'https://www.youtube.com/playlist?list='
+  const CHANNEL_URL = 'https://www.youtube.com/channel/'
+
   const YouTubeImport = Plugin.extend({
     name: 'YouTube Import',
-    description: 'Working YouTube importing functions.',
+    description: 'Mostly working YouTube importing functions.',
 
     enable() {
       this.plAdvice = around(YTPlaylistService.prototype, 'load', joinpoint => {
         let [ username, cb ] = joinpoint.args
+        // strip channel URL prefix
+        if (username.indexOf(CHANNEL_URL) === 0) {
+          username = username.slice(CHANNEL_URL.length)
+        }
+        // strip URL suffixes like /videos, /playlists
+        if (username.indexOf('/') !== -1) {
+          username = username.split('/')[0]
+        }
         new YouTubeImporter(username).loadAll((err, result) => {
           cb(result)
         })
