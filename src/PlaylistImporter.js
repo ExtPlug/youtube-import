@@ -1,6 +1,6 @@
 define(function (require, exports, module) {
 
-  const { authorTitle } = require('plug/util/util')
+  const util = require('plug/util/util')
   const { Collection, Events } = require('backbone')
   const { find, extend } = require('underscore')
 
@@ -89,7 +89,7 @@ define(function (require, exports, module) {
 
     toMediaItems(items = this.items) {
       return items.map(item => {
-        let at = authorTitle(item.title)
+        let at = util.authorTitle(item.title)
         return {
           id: null,
           format: 1,
