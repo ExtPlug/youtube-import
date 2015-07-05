@@ -9,6 +9,7 @@ define(function (require, exports, module) {
 
   const PLAYLIST_URL = 'https://www.youtube.com/playlist?list='
   const CHANNEL_URL = 'https://www.youtube.com/channel/'
+  const USER_URL = 'https://www.youtube.com/user/'
 
   const YouTubeImport = Plugin.extend({
     name: 'YouTube Import',
@@ -21,12 +22,17 @@ define(function (require, exports, module) {
         if (username.indexOf(CHANNEL_URL) === 0) {
           username = username.slice(CHANNEL_URL.length)
         }
+        if (username.indexOf(USER_URL) === 0) {
+          username = username.slice(USER_URL.length)
+        }
         // strip URL suffixes like /videos, /playlists
         if (username.indexOf('/') !== -1) {
           username = username.split('/')[0]
         }
-        new YouTubeImporter(username).loadAll((err, result) => {
-          cb(result)
+        this.resolveChannelId(username, (err, channelId) => {
+          new YouTubeImporter(channelId).loadAll((err, result) => {
+            cb(result)
+          })
         })
       })
       this.imAdvice = around(YTImportService.prototype, 'load', joinpoint => {
@@ -40,6 +46,21 @@ define(function (require, exports, module) {
     disable() {
       this.plAdvice.remove()
       this.imAdvice.remove()
+    },
+
+    resolveChannelId(username, cb) {
+      let request = gapi.client.youtube.channels.list({
+        part: 'id',
+        forUsername: username
+      })
+      request.execute(res => {
+        if (res.items.length > 0) {
+          cb(null, res.items[0].id)
+        }
+        else {
+          cb(null, username)
+        }
+      })
     }
   })
 
