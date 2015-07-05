@@ -274,12 +274,15 @@ define('extplug/youtube-import/main',['require','exports','module','extplug/Plug
 
   var PLAYLIST_URL = 'https://www.youtube.com/playlist?list=';
   var CHANNEL_URL = 'https://www.youtube.com/channel/';
+  var USER_URL = 'https://www.youtube.com/user/';
 
   var YouTubeImport = Plugin.extend({
     name: 'YouTube Import',
     description: 'Mostly working YouTube importing functions.',
 
     enable: function enable() {
+      var _this = this;
+
       this.plAdvice = around(YTPlaylistService.prototype, 'load', function (joinpoint) {
         var _joinpoint$args = _slicedToArray(joinpoint.args, 2);
 
@@ -290,12 +293,17 @@ define('extplug/youtube-import/main',['require','exports','module','extplug/Plug
         if (username.indexOf(CHANNEL_URL) === 0) {
           username = username.slice(CHANNEL_URL.length);
         }
+        if (username.indexOf(USER_URL) === 0) {
+          username = username.slice(USER_URL.length);
+        }
         // strip URL suffixes like /videos, /playlists
         if (username.indexOf('/') !== -1) {
           username = username.split('/')[0];
         }
-        new YouTubeImporter(username).loadAll(function (err, result) {
-          cb(result);
+        _this.resolveChannelId(username, function (err, channelId) {
+          new YouTubeImporter(channelId).loadAll(function (err, result) {
+            cb(result);
+          });
         });
       });
       this.imAdvice = around(YTImportService.prototype, 'load', function (joinpoint) {
@@ -314,6 +322,20 @@ define('extplug/youtube-import/main',['require','exports','module','extplug/Plug
     disable: function disable() {
       this.plAdvice.remove();
       this.imAdvice.remove();
+    },
+
+    resolveChannelId: function resolveChannelId(username, cb) {
+      var request = gapi.client.youtube.channels.list({
+        part: 'id',
+        forUsername: username
+      });
+      request.execute(function (res) {
+        if (res.items.length > 0) {
+          cb(null, res.items[0].id);
+        } else {
+          cb(null, username);
+        }
+      });
     }
   });
 
