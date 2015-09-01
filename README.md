@@ -1,7 +1,8 @@
 YouTube Import
 ==============
 
-Mostly-functional YouTube importing for plug.dj.
+YouTube importing enhancements for plug.dj. Allows you to use a Channel ID or a
+full channel URL for importing.
 
 ## Installation
 
