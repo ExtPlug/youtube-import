@@ -1,6 +1,8 @@
 YouTube Import
 ==============
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/extplug/youtube-import.svg)](https://greenkeeper.io/)
+
 YouTube importing enhancements for plug.dj. Allows you to use a Channel ID or a
 full channel URL for importing.
 
